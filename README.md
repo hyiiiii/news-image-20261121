@@ -1,11 +1,15 @@
 # WORLD / 21 NOV 2026
 
+[![make.fun · news-image-20261121](https://make.fun/badge/news-image-20261121.svg)](https://make.fun/bounty/news-image-20261121?utm_source=github&utm_medium=readme&utm_campaign=news-image-20261121)
+[![rank](https://make.fun/badge/news-image-20261121/hyiiiii/news-image-20261121/rank.svg)](https://make.fun/bounty/news-image-20261121/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=news-image-20261121)
+[![reward](https://make.fun/badge/news-image-20261121/hyiiiii/news-image-20261121/reward.svg)](https://make.fun/bounty/news-image-20261121?utm_source=github&utm_medium=readme&utm_campaign=news-image-20261121)
+
 An original editorial front-page illustration for the **make.fun** news-image
 bounty, depicting the world news of Saturday 21 November 2026 as an early
 edition.
 
-- make.fun: https://make.fun
-- Bounty: https://make.fun/bounty/news-image-20261121
+- [make.fun](https://make.fun/)
+- [Bounty](https://make.fun/bounty/news-image-20261121)
 
 ## Ownership metadata
 
@@ -59,8 +63,8 @@ The suite checks real PNG chunk structure and CRCs, exact 1024 x 1024 8-bit
 RGB dimensions, decompressed scanline length, the size cap, the editorial
 status and attribution copy, stdlib-only offline runtime imports, clear
 failure on missing or corrupt assets, exact deterministic installation from
-different working directories, and regeneration of the shipped asset from
-`tools/render_entry.py`.
+different working directories, regeneration of the shipped asset from
+`tools/render_entry.py`, and the live README intake branding.
 
 ## Edition cutoff and limitations
 
@@ -89,7 +93,7 @@ They intentionally avoid fabricated likenesses and do not add later events.
 - `assets/entry.png` — shipped image
 - `main.py` — dependency-free validated installer
 - `tools/render_entry.py` — original deterministic Pillow renderer
-- `tests/test_entry.py` — structural, runtime, regeneration, and copy tests
+- `tests/test_entry.py` — structural, runtime, regeneration, copy, and README intake tests
 - `SOURCES.md` — source URLs, dates, and attribution caveats
 - `.makefun/owner.json` — public entry-wallet ownership metadata
 - `LICENSE` — MIT

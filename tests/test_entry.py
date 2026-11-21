@@ -4,6 +4,7 @@ import ast
 import binascii
 import hashlib
 import importlib.util
+import re
 import struct
 import subprocess
 import sys
@@ -16,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ASSET = ROOT / "assets" / "entry.png"
 MAIN = ROOT / "main.py"
 RENDERER = ROOT / "tools" / "render_entry.py"
+README = ROOT / "README.md"
 OUTPUT = Path("/output/entry.png")
 MAX_BYTES = 1_048_576
 
@@ -55,6 +57,111 @@ def run_main(cwd: Path):
         capture_output=True,
         timeout=30,
     )
+
+
+REPO = "hyiiiii/news-image-20261121"
+COMPETITION_BADGE = "https://make.fun/badge/news-image-20261121.svg"
+RANK_BADGE = f"https://make.fun/badge/news-image-20261121/{REPO}/rank.svg"
+REWARD_BADGE = f"https://make.fun/badge/news-image-20261121/{REPO}/reward.svg"
+
+
+def visible_markdown(value: str) -> str:
+    visible_lines = []
+    fence = None
+    for line in value.splitlines():
+        stripped = line.lstrip()
+        if fence:
+            if stripped.startswith(fence):
+                fence = None
+            continue
+        if stripped.startswith("```") or stripped.startswith("~~~"):
+            fence = stripped[:3]
+            continue
+        visible_lines.append(line)
+    visible = "\n".join(visible_lines)
+    return re.sub(r"<!--.*?-->", "", visible, flags=re.S)
+
+
+def readme_branding_errors(value: str) -> list[str]:
+    visible = visible_markdown(value)
+    errors = []
+    images = re.findall(r"!\[[^\]]*\]\((https://[^)\s]+)\)", visible)
+    linked_images = re.findall(
+        r"\[!\[[^\]]*\]\((https://[^)\s]+)\)\]\((https://[^)\s]+)\)",
+        visible,
+    )
+    expected = [COMPETITION_BADGE, RANK_BADGE, REWARD_BADGE]
+    lowered_images = [url.lower() for url in images]
+
+    for badge in expected:
+        if badge.lower() not in lowered_images:
+            errors.append(f"missing visible Markdown image: {badge}")
+    if any(re.search(r"[<>{}]", url) for url in images):
+        errors.append("badge URL contains a placeholder")
+
+    hrefs = {badge.lower(): href for badge, href in linked_images}
+    expected_hrefs = {
+        COMPETITION_BADGE.lower(): "https://make.fun/bounty/news-image-20261121",
+        RANK_BADGE.lower(): "https://make.fun/bounty/news-image-20261121/leaderboard",
+        REWARD_BADGE.lower(): "https://make.fun/bounty/news-image-20261121",
+    }
+    for badge, prefix in expected_hrefs.items():
+        href = hrefs.get(badge)
+        if not href:
+            errors.append(f"badge is not a linked image: {badge}")
+        elif not href.lower().startswith(prefix):
+            errors.append(f"badge links to the wrong make.fun page: {href}")
+
+    nonempty = [line.strip() for line in visible.splitlines() if line.strip()]
+    h1_index = next((i for i, line in enumerate(nonempty) if line.startswith("# ")), None)
+    if h1_index is None:
+        errors.append("missing visible H1")
+    else:
+        following = [line.lower() for line in nonempty[h1_index + 1:h1_index + 4]]
+        for badge in expected:
+            if not any(badge.lower() in line for line in following):
+                errors.append(f"badge is not immediately below the H1: {badge}")
+
+    if not re.search(r"\[make\.fun\]\(https://make\.fun/\)", visible):
+        errors.append("missing explicit [make.fun](https://make.fun/) link")
+    if not re.search(
+        r"\[Bounty\]\(https://make\.fun/bounty/news-image-20261121(?:[?#][^)]*)?\)",
+        visible,
+    ):
+        errors.append("missing explicit Markdown bounty link")
+    return errors
+
+
+class ReadmeBrandingTests(unittest.TestCase):
+    """Live server-intake checks for repo_readme branding.
+
+    The local make.fun check did not evaluate repo_readme or repo_about even
+    though those are live server intake gates; a green local check alone was
+    therefore insufficient. This regression test reads the root README as
+    rendered Markdown and requires three real linked badge images outside
+    comments and code fences, plus explicit make.fun and bounty links.
+    """
+
+    def test_root_readme_has_live_linked_intake_badges(self):
+        self.assertEqual(readme_branding_errors(README.read_text()), [])
+
+    def test_branding_check_rejects_missing_fenced_commented_or_bare_badges(self):
+        original = README.read_text()
+        lines = original.splitlines()
+        missing = "\n".join(line for line in lines if not line.startswith("[!["))
+        fenced = "\n".join(lines[:1] + ["```markdown"] + lines[1:4] + ["```"] + lines[4:])
+        commented = "\n".join(lines[:1] + ["<!--"] + lines[1:4] + ["-->"] + lines[4:])
+        bare = original
+        for badge in (COMPETITION_BADGE, RANK_BADGE, REWARD_BADGE):
+            bare = re.sub(r"\[!\[[^\]]*\]\(" + re.escape(badge) + r"\)\]\([^)]+\)", badge, bare, count=1)
+        for name, value in (
+            ("missing", missing),
+            ("fenced", fenced),
+            ("commented", commented),
+            ("bare", bare),
+        ):
+            with self.subTest(name=name):
+                self.assertTrue(readme_branding_errors(value))
 
 
 class ShippedPngTests(unittest.TestCase):
