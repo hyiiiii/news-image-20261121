@@ -1,4 +1,11 @@
+.preview/
 __pycache__/
-*.pyc
+*.py[cod]
+output/
+*.log
+*.db
+*.sqlite
+*.sqlite3
+*.bundle
+*.tmp
 .DS_Store
-.venv/

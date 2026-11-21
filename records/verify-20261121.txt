@@ -1,7 +1,0 @@
-asset: /workspace/makefun-entry-20261121/assets/entry.png
-  format=PNG size=1024x1024 bytes=160263 sha256=f4a30f5885de631de38edb6f970b3201648e95ee2c59bb885f1152ced03ec6de
-copy run 1 sha256=f4a30f5885de631de38edb6f970b3201648e95ee2c59bb885f1152ced03ec6de
-copy run 2 sha256=f4a30f5885de631de38edb6f970b3201648e95ee2c59bb885f1152ced03ec6de
-two independent copies are byte-identical and match the asset
-/output writable probe: not writable on this machine ([Errno 13] Permission denied: '/output'). Official grader path remains /output/entry.png.
-PASS: PNG gate (whole PNG, <=1024 edge, <=1 MiB) and deterministic copies.
